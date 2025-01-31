@@ -1,0 +1,334 @@
+local string_find   = string.find
+
+perk_based_artefacts.artefact_props.af_moh = { -- Mutant parts bonuses
+		add_speed = function(self, amount, is_sprint)
+			speed.add_speed("af_moh", 1 + amount, is_sprint, true)
+		end,
+		remove_speed = function(self)
+			perk_based_artefacts.trace("af_moh remove speed")
+			speed.remove_speed("af_moh")
+		end,
+		add_effect = function(self, func, on_end)
+			perk_based_artefacts.add_simple_timed_effect(60, func, on_end, "af_moh_effect")
+		end,
+		remove_effect = function(self)
+			perk_based_artefacts.trace("af_moh remove effect")
+			perk_based_artefacts.remove_timed_effect("af_moh_effect", true)
+		end,
+		register = function(self, callback, func)
+			perk_based_artefacts.register_callback(callback, func, nil, "af_moh")
+		end,
+		unregister = function(self)
+			perk_based_artefacts.trace("af_moh unregister callback")
+			perk_based_artefacts.unregister_callback("af_moh")
+		end,
+		reset = function(self)
+			perk_based_artefacts.trace("af_moh reset")
+			self:remove_effect()
+			self:remove_speed()
+			self:unregister()
+		end,
+		mutant_part_flesh_meat = function(self, actor, should_buff_moss)
+			local valid_hits = { -- Valid hit types to trigger
+				[hit.fire_wound] = true
+			}
+
+			local health_boost = (should_buff_moss and 0.0015) or 0.001
+			self:add_effect(function()
+				actor:change_health(health_boost)
+			end)
+			
+			if not should_buff_moss then
+				self:register("actor_on_before_hit", function(s_hit, bone_id, flags)
+					if valid_hits[s_hit.type] then
+						s_hit.power = s_hit.power * 1.33
+					end
+				end)
+			end
+		end,
+		mutant_part_boar_chop = function(self, actor, should_buff_moss)
+			local valid_hits = { -- Valid hit types to trigger
+				[hit.strike] = true,
+				[hit.wound] = true,
+			}
+			
+			self:register("actor_on_before_hit", function(s_hit, bone_id, flags)
+				if valid_hits[s_hit.type] then
+					s_hit.power = s_hit.power * (should_buff_moss and 0.625 or 0.75)
+				end
+			end)
+		end,
+		mutant_part_dog_meat = function(self, actor, should_buff_moss)
+			local bleeding_cure_boost = (should_buff_moss and 0.00225) or 0.0015
+			self:add_effect(function()
+				actor.bleeding = bleeding_cure_boost
+				change_psy_health((should_buff_moss and 0.0015) or 0.001)
+			end)
+		end,
+		mutant_part_psevdodog_meat = function(self, actor, should_buff_moss)
+			local valid_hits = { -- Valid hit types to trigger
+				[hit.telepatic] = true
+			}
+
+			self:add_effect(function()
+				change_psy_health((should_buff_moss and 0.004) or 0.002)
+			end)
+
+			self:register("actor_on_before_hit", function(s_hit, bone_id, flags)
+				if valid_hits[s_hit.type] then
+					perk_based_artefacts.trace("pseudodog hit %s", hit.telepatic)
+					s_hit.power = s_hit.power * (should_buff_moss and 0.625 or 0.75)
+				end
+			end)
+		end,
+		mutant_part_krovosos_meat = function(self, actor, should_buff_moss)
+
+			local function ignore_enemy(obj, enemy, flags) -- Remove evaluation
+				if (enemy:id() == AC_ID) then
+					flags.override = true
+					flags.result = false
+					return
+				end
+			end
+
+			local function enable_enemy()
+				UnregisterScriptCallback("on_enemy_eval", ignore_enemy)
+				perk_based_artefacts.remove_status_effect("af_moh_invisibility")
+			end
+
+			local function enable_enemy_on_hit(obj, s_hit)
+				if s_hit.draftsman:id() == AC_ID then
+					enable_enemy()
+				end
+			end
+
+			self:register("on_enemy_eval", ignore_enemy)
+			RegisterScriptCallback("actor_on_weapon_fired", enable_enemy)
+			RegisterScriptCallback("monster_on_before_hit", enable_enemy_on_hit)
+			RegisterScriptCallback("npc_on_before_hit", enable_enemy_on_hit)
+			perk_based_artefacts.add_status_effect(60, nil, "af_moh_invisibility")
+
+			local bleeding_cure_boost = (should_buff_moss and 0.0045) or 0.003
+			self:add_effect(function()
+				actor.bleeding = bleeding_cure_boost
+			end, function()
+				UnregisterScriptCallback("actor_on_weapon_fired", enable_enemy)
+				UnregisterScriptCallback("monster_on_before_hit", enable_enemy_on_hit)
+				UnregisterScriptCallback("npc_on_before_hit", enable_enemy_on_hit)
+				perk_based_artefacts.remove_status_effect("af_moh_invisibility")
+			end)
+		end,
+		mutant_part_psysucker_meat = function(self, actor, should_buff_moss)
+
+			local function ignore_enemy(obj, enemy, flags) -- Remove evaluation
+				if (enemy:id() == AC_ID) then
+					flags.override = true
+					flags.result = false
+					return
+				end
+			end
+
+			local function enable_enemy()
+				UnregisterScriptCallback("on_enemy_eval", ignore_enemy)
+				perk_based_artefacts.remove_status_effect("af_moh_invisibility")
+			end
+
+			local function enable_enemy_on_hit(obj, s_hit)
+				if s_hit.draftsman:id() == AC_ID then
+					enable_enemy()
+				end
+			end
+
+			self:register("on_enemy_eval", ignore_enemy)
+			RegisterScriptCallback("actor_on_weapon_fired", enable_enemy)
+			RegisterScriptCallback("monster_on_before_hit", enable_enemy_on_hit)
+			RegisterScriptCallback("npc_on_before_hit", enable_enemy_on_hit)
+			perk_based_artefacts.add_status_effect(60, nil, "af_moh_invisibility")
+
+			self:add_effect(function()
+				change_psy_health((should_buff_moss and 0.0075) or 0.005)
+			end, function()
+				UnregisterScriptCallback("actor_on_weapon_fired", enable_enemy)
+				UnregisterScriptCallback("monster_on_before_hit", enable_enemy_on_hit)
+				UnregisterScriptCallback("npc_on_before_hit", enable_enemy_on_hit)
+				perk_based_artefacts.remove_status_effect("af_moh_invisibility")
+			end)
+		end,
+		mutant_part_snork_hand = function(self, actor, should_buff_moss)
+			local valid_hits = { -- Valid hit types to trigger
+				[hit.radiation] = true,
+			}
+
+			self:add_effect(function()
+				actor:change_power((should_buff_moss and 0.0075) or 0.005)
+				if not should_buff_moss then
+					actor:change_satiety(-0.001)
+				end
+				actor:change_radiation((should_buff_moss and -0.00036) or -0.00024)
+			end)
+
+			self:register("actor_on_before_hit", function(s_hit, bone_id, flags)
+				if valid_hits[s_hit.type] then
+					perk_based_artefacts.trace("snork meat active")
+					s_hit.power = s_hit.power * 0.5
+				end
+			end)
+		end,
+		mutant_part_chimera_meat = function(self, actor, should_buff_moss)
+			local valid_hits = { -- Valid hit types to trigger
+				[hit.radiation] = true,
+			}
+
+			self:add_effect(function()
+				actor:change_health((should_buff_moss and 0.003) or 0.002)
+				actor:change_power((should_buff_moss and 0.015) or 0.01)
+			end)
+
+			self:register("actor_on_before_hit", function(s_hit, bone_id, flags)
+				if valid_hits[s_hit.type] then
+					s_hit.power = s_hit.power * (should_buff_moss and 0.49 or 0.66)
+				end
+			end)
+
+		end,
+		mutant_part_lurker_meat = function(self, actor, should_buff_moss)
+			local valid_hits = { -- Valid hit types to trigger
+				[hit.light_burn] = true,
+				[hit.burn] = true,
+				[hit.shock] = true,
+				[hit.chemical_burn] = true
+			}
+
+			self:register("actor_on_before_hit", function(s_hit, bone_id, flags)
+				if valid_hits[s_hit.type] then
+					s_hit.power = s_hit.power * (should_buff_moss and 0.49 or 0.66)
+				end
+			end)
+		end,
+		mutant_part_tushkano_meat = function(self, actor, should_buff_moss)
+			self:add_speed((should_buff_moss and 0.3) or 0.2, false)
+
+			local valid_hits = { -- Valid hit types to trigger
+				[hit.wound] = true,
+				[hit.strike] = true
+			}
+			if not should_buff_moss then
+				self:register("actor_on_before_hit", function(s_hit, bone_id, flags)
+					if valid_hits[s_hit.type] then
+						s_hit.power = s_hit.power * 1.2
+					end
+				end)
+			end
+		end,
+		activate_effect = function(self, actor, food_section, artefact_count)
+			if self[food_section] then
+				perk_based_artefacts.trace("Moss, Eating food %s, # of Moss equipped %s", food_section, artefact_count)
+
+				-- Remove 80% of satiety increase
+				local satiety_increase = SYS_GetParam(2, food_section, "eat_satiety", 0)
+				local satiety = actor:cast_Actor():conditions():GetSatiety()
+				local required_satiety = 1 - satiety
+				perk_based_artefacts.trace("actor satiety %s", satiety)
+				actor:change_satiety(required_satiety > satiety_increase and satiety_increase * -0.8 or required_satiety * -0.8)
+				local should_buff_moss = artefact_count > 4
+				local timer_buff = math.max((artefact_count - 1) * 60, 0)
+				self:reset()
+				self[food_section](self, actor, should_buff_moss)
+				perk_based_artefacts.add_simple_timed_effect((60 + timer_buff), nil, function()
+					self:reset()
+				end, "af_moh")
+			end
+		end
+	}
+
+local raw_meat_list = 
+{
+	["mutant_part_flesh_meat"] = true,
+	["mutant_part_boar_chop"] = true,
+	["mutant_part_dog_meat"] = true,
+	["mutant_part_psevdodog_meat"] = true,
+	["mutant_part_krovosos_meat"] = true,
+	["mutant_part_psysucker_meat"] = true,
+	["mutant_part_snork_hand"] = true,
+	["mutant_part_chimera_meat"] = true,			
+	["mutant_part_lurker_meat"] = true,			
+	["mutant_part_tushkano_meat"] = true
+}
+
+local zone_quality_convert = 
+{
+	["meat_flesh"] = "mutant_part_flesh_meat",
+	["meat_boar"] = "mutant_part_boar_chop",
+	["meat_dog"] = "mutant_part_dog_meat",
+	["meat_pseudodog"] = "mutant_part_psevdodog_meat",
+	["meat_bloodsucker"] = "mutant_part_krovosos_meat",
+	["meat_psysucker"] = "mutant_part_psysucker_meat",
+	["meat_snork"] = "mutant_part_snork_hand",
+	["meat_chimera"] = "mutant_part_chimera_meat",			
+	["meat_lurker"] = "mutant_part_lurker_meat",			
+	["meat_tushkano"] = "mutant_part_tushkano_meat"			
+}
+
+local stewed_quality_convert =
+{
+	["meat_flesh_b"] = "mutant_part_flesh_meat",
+	["meat_boar_b"] = "mutant_part_boar_chop",
+	["meat_dog_b"] = "mutant_part_dog_meat",
+	["meat_pseudodog_b"] = "mutant_part_psevdodog_meat",
+	["meat_bloodsucker_b"] = "mutant_part_krovosos_meat",
+	["meat_psysucker_b"] = "mutant_part_psysucker_meat",
+	["meat_snork_b"] = "mutant_part_snork_hand",
+	["meat_chimera_b"] = "mutant_part_chimera_meat",			
+	["meat_lurker_b"] = "mutant_part_lurker_meat",			
+	["meat_tushkano_b"] = "mutant_part_tushkano_meat"		
+}
+
+-- ilrathCXV (10/20/24): Allows Zone-produced and Stewed mutant food to be used for the "Moss" effect w/ 3 "Moss" artefacts equipped
+perk_based_artefacts.artefact_on_item_use_functions.af_moh = function(actor, artefact_count, artefact_ids, artefact_names, obj)
+		if not obj then
+			perk_based_artefacts.trace("Food object not found")
+			return
+		end
+		
+		local section = obj:section()
+		
+		printf("Moss count: %s", artefact_count)
+		
+		if artefact_count > 2 then
+			if string_find(section, "meat_") then			
+				printf("Old section: %s", section)
+				
+				if zone_quality_convert[section] then
+					section = zone_quality_convert[section]
+				elseif stewed_quality_convert[section] then
+					section = stewed_quality_convert[section]
+				end
+				
+				printf("New section: %s", section)
+				
+			end
+		end
+		
+		perk_based_artefacts.artefact_props.af_moh:activate_effect(actor, section, artefact_count)		
+	end
+
+if food_poisoning then
+	BaseFoodPoisonQueue = food_poisoning.add_to_queue
+	function food_poisoning.add_to_queue(id, ticks, amt)
+		
+		if amt <= 0 then return BaseFoodPoisonQueue(id, ticks, amt) end
+		
+		local moss_count = 0
+		db.actor:iterate_belt( function(owner, obj)
+			if obj:section() == "af_moh" then
+				moss_count = moss_count + 1
+			end
+		end)
+		
+		if moss_count < 5 then
+			return BaseFoodPoisonQueue(id, ticks, (amt * (1 - (0.2 * moss_count))))
+		end
+		
+		return true
+	end
+end

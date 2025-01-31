@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<!--
+  "Moss" Buff
+-->
+<string_table>
+  <string id="st_pba_af_moh_perk">
+    <text>
+    %c[0,209,172,56]Perk: %c[d_orange]CULINARY HYPERVERSITY\n
+    %c[0,81,63,22] • %c[0,209,172,56]Convert energy of raw mutant meat into special abilities\n
+    %c[0,81,63,22] • %c[0,209,172,56]Lasts for 1 minute, but eating different mutant meat will override current effect and restart buff timer\n
+	%c[0,81,63,22] • %c[0,209,172,56]Equipping 3 "Moss" allows Zone-produced and Stewed mutant food to grant their respective bonuses\n
+	%c[0,81,63,22] • %c[0,209,172,56]Equipping 5 or more "Moss" removes any penalties from various mutant meat effects\n
+	%c[0,81,63,22] • %c[0,209,172,56]Equipping 5 or more "Moss" strengthens all positive mutant meat effects by 50%\n
+	%c[0,81,63,22] • %c[0,209,172,56]Each extra "Moss" equipped will add 1 minute to the base timer (i.e. 2 "Moss" = 2 minutes)\n\n
+    %c[d_orange]Table of effects (with less than 5 "Moss" equipped):\n
+	%c[0,192,71,221] - Flesh meat: %c[ui_gray_3]1%/sec health regen, 33% bullet damage penalty\n
+	%c[0,192,71,221] - Boar meat: %c[ui_gray_3]25% melee damage reduction\n
+	%c[0,192,71,221] - Dog meat: %c[ui_gray_3]slight bleeding recovery, 1%/sec psy regen\n
+	%c[0,192,71,221] - Pseudodog: %c[ui_gray_3]2%/sec psy regen, 25% psy damage reduction\n
+	%c[0,192,71,221] - Bloodsucker: %c[ui_gray_3]become invisible until a hostile action is performed, moderate bleeding recovery\n
+	%c[0,192,71,221] - Psysucker: %c[ui_gray_3]become invisible until performing a hostile action, 5%/sec psy regen\n
+	%c[0,192,71,221] - Snork: %c[ui_gray_3]50% radiation damage reduction, 5%/sec stamina regen, 5msv/sec radiation cure, constant hunger drain\n
+	%c[0,192,71,221] - Chimera: %c[ui_gray_3]2%/sec health regen, 10%/sec stamina regen, 33% radiation damage reduction\n
+	%c[0,192,71,221] - Lurker: %c[ui_gray_3]33% chem/fire/electric anomaly damage reduction\n
+	%c[0,192,71,221] - Tushkano: %c[ui_gray_3]20% speed increase, 20% melee damage penalty\n
+	%c[0,81,63,22] • %c[0,209,172,56]Multiple Artefacts Stack?: %c[ui_green]YES\n
+	</text>
+  </string>
+</string_table>
